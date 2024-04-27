@@ -1,0 +1,52 @@
+'''Задана рекуррентная функция. Область определения функции - натуральные числа.
+Написать программу сравнительного вычисления данной функции рекурсивно и
+итерационно. Определить границы применимости рекурсивного и итерационного
+подхода. Результаты сравнительного исследования времени вычисления представить в
+табличной и графической форме в виде отчета по лабораторной работе'''
+'''f(1) = 1, g(1) = 1, f(n) = (-1 ** n) * (f(n - 1) - 2 * g(n - 1)), g(n) = -f(n - 1) + (n - 1)!'''
+
+import math
+import time
+
+
+def f_rec(n):
+    if n == 1:
+        return 1
+    return (-1 ** n) * (f_rec(n - 1) - 2 * g_rec(n - 1))
+
+
+def g_rec(n):
+    if n == 1:
+        return 1
+    return -f_rec(n - 1) + math.factorial(n - 1)
+
+
+def fact_iter(n):
+    fact = 1
+    for i in range(1, n + 1):
+        fact *= i
+    return fact
+
+
+def iterate(n):
+    f = [0] * (n + 1)
+    g = [0] * (n + 1)
+
+    f[1] = 1
+    g[1] = 1
+
+    for i in range(2, n + 1):
+        f[i] = (-1 ** i) * (f[i - 1] - 2 * g[i - 1])
+        g[i] = -(f[i - 1]) + math.factorial(i - 1)
+
+    return f[n]
+
+
+'''for i in range(50, 100):
+    t0 = time.time()
+    f_rec(i)
+    t1 = time.time() - t0
+    t2 = time.time()
+    iterate(i)
+    t3 = time.time() - t2
+    print(t1, t3)'''
