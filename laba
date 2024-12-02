@@ -1,122 +1,99 @@
 """
+Вариант 14
 Задана рекуррентная функция. Область определения функции – натуральные числа.
  Написать программу сравнительного вычисления данной функции рекурсивно и итерационно.
   Определить границы применимости рекурсивного и итерационного подхода.
-   Результаты сравнительного исследования времени вычисления представить
-    в табличной и графической форме в виде отчета по лабораторной работе.
-14.	F(1) = 1; G(1) = 1; F(n) = (-1)n*(F(n–1) – 2*G(n–1)), G(n) = -F(n–1) + (n-1)!, при n >=2"""
+   Результаты сравнительного исследования времени вычисления представить в табличной и графической форме в виде отчета по лабораторной работе.
+14)     F(1) = 1; G(1) = 1; F(n) = (-1)n*( F(n–1) – 2*G(n–1)), G(n) = -F(n–1) + (n–1)!, при n >=2"""
 
 import time
 import matplotlib.pyplot as plt
 from functools import lru_cache
 
 n = -1
-one = 1
-k = -1
+
 timer = []
 timer_rec = []
-ans = 1
-step = -1
+fact = [1] * 2
+
+one = -1
+
+lru_cache(maxsize=None)
 
 
-@lru_cache(maxsize=None)
-def fact(x):
-    if x == 1:
-        return x
-    else:
-        return x * fact(x - 1)
+def itfact(x):
+    global fact
+    if fact[1] < x:
+        for i in range(fact[1] + 1, x + 1):
+            fact[0] = fact[0] * i
+    elif fact[1] > x:
+        for i in range(x + 1, fact[1] + 1):
+            fact[0] = fact[0] // i
+    fact[1] = x
+    return fact[0]
 
 
-def rec_f(x, one):
+# рекурсия
+lru_cache(maxsize=None)
+
+
+def rec_f(x):
+    global one
     if x < 2:
         return 1
     else:
-        one *= -1
-        return one * (rec_f(x - 1, one) - 2 * rec_g(x - 1, one))
+        return one ** x * (rec_f(x - 1) - (2 * rec_g(x - 1)))
 
 
-def rec_g(x, one):
+lru_cache(maxsize=None)
+
+
+def rec_g(x):
     if x < 2:
         return 1
     else:
-        return -rec_f(x - 1, one) + fact(x - 1)
+        return (-1 * rec_f(x - 1)) + itfact(x - 1)
 
 
 def it_f(x):
-    f = [1] * 3
-    g = [1] * 3
-    one = 1
-    for i in range(2, x + 1):
-        g[1] = -f[0] + it_factorial(i - 1)
-        f[-1] = one * (f[1] - 2 * g[1])
-        f[0], f[1] = f[1], f[2]
-        g[0], g[1] = g[1], g[2]
+    global one
+    f = [1, 1]
+    g = [1, 1]
+    for i in range(1, x + 1):
         one *= -1
-
-    return f[-1]
-
-
-@lru_cache(maxsize=None)
-def it_factorial(x):
-    res = x
-    for i in range(1, x):
-        res = res * (i + 1)
-    return res
+        g[1] = itfact(i) - f[0]
+        f[1] = one * (f[0] - (g[0] * 2))
+        f[0], f[1] = f[1], f[0]
+        g[0], g[1] = g[1], g[0]
+    return f[1]
 
 
 while n < 1:
-    print("От 1 до ...")
+    print("Введите натуральное число от 1 ")
     n = int(input())
-while step < 1:
-    step = int(input("Шаг графика ..."))
-graf = list(range(1, n + 1, step))
 
-while k != 0 and k != 1 and k != 2:
-    print("Режим работы: 0-рекурсия; 1-итерация; 2-оба")
-    k = int(input())
+graf = list(range(1, n + 1))
 
-if k == 0 and ans == 1:
-    for i in graf:
-        start = time.time()
-        res = rec_f(i, one)
-        end = time.time()
-        timer.append(end - start)
-        rec_times = end - start
-        print("№", i, "Результат рекурсии ", res, "\nВремя выполнения", end - start, "\n\n")
-    """графики"""
-    plt.plot(graf, timer, label='рекурсионная функция.')
-    plt.legend(loc=2)
+for i in graf:
+    start = time.time()
+    one = -1
+    result = it_f(i)
+    end = time.time()
+    timer.append(end - start)
+    start_rec = time.time()
+    one = -1
+    res = rec_f(i)
+    end_rec = time.time()
+    timer_rec.append(end_rec - start_rec)
+    print(i,
+          " | Результат рекурсии ->", res,
+          " | результат итерации ->", result,
+          " | время  рекурсии ->", end_rec - start_rec,
+          " | время  итерации ->", end - start)
 
-if k == 1 and ans == 1:
-    for i in graf:
-        start = time.time()
-        result = it_f(i)
-        end = time.time()
-        timer.append(end - start)
-        iter_times = end - start
-        print(i, "№Результат рекурсии ", result, "\nВремя выполнения", end - start, "\n\n")
-    """графики"""
-    plt.plot(graf, timer, label='Итерационная функция.')
-    plt.legend(loc=2)
-
-if k == 2 and ans == 1:
-    for i in graf:
-        start = time.time()
-        result = it_f(i)
-        end = time.time()
-        timer.append(end - start)
-        start_rec = time.time()
-        res = rec_f(i, one)
-        end_rec = time.time()
-        timer_rec.append(end_rec - start_rec)
-        rec_times = end_rec - start_rec
-        iter_times = end - start
-        print("\n", i, "№результат рекурсии ", res, "---------результат итерации", result,
-              "-----------время  РЕКУРСИИ ", end_rec - start_rec, "-------время  ИТЕРАЦИИ", end - start)
-    """графики"""
-    plt.plot(graf, timer, label='Итерационная функция.')
-    plt.plot(graf, timer_rec, label='Рекусионная функция.')
-    plt.legend(loc=2)
+plt.plot(graf, timer, label='Итерационная функция.')
+plt.plot(graf, timer_rec, label='Рекусионная функция.')
+plt.legend(loc=2)
 
 plt.xlabel('Значение n')
 plt.ylabel('Время выполнения (c)')
