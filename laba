@@ -25,10 +25,10 @@ def iterative_f(n):
     if n == 1:
         return 1
     f_prev, g_prev = 1, 1
-    fact = 1  # (1-1)! = 1
+    fact = 1
     for i in range(2, n + 1):
         sign = (-1) ** i
-        fact *= (i - 1)  # Update factorial: (i-1)!
+        fact *= (i - 1)
         f_current = sign * (f_prev - 2 * g_prev)
         g_current = fact - f_prev
         f_prev, g_prev = f_current, g_current
