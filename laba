@@ -1,92 +1,121 @@
-import time
-import matplotlib.pyplot as plt
+'''Лабораторная работа №5
+Задана рекуррентная функция. Область определения функции – натуральные числа.
+Написать программу сравнительного вычисления данной функции рекурсивно и итерационно.
+Определить границы применимости рекурсивного и итерационного подхода.
+Результаты сравнительного исследования времени вычисления представить
+в табличной и графической форме в виде отчета по лабораторной работе.
+Вариант 14
+Функция:
+F(1) = 1; G(1) = 1;
+При n >=2
+F(n) = (-1)n*( F(n–1) – 2*G(n–1))
+G(n) = -F(n–1) + (n–1)!
+'''
+
+import timeit
+import sys
+
+sys.setrecursionlimit(100000)  # Увеличиваем лимит рекурсий
+sys.set_int_max_str_digits(100000000)  # Увеличиваем максимальное количество знаков
+
+# Невероятно полезный знак
+sign = -1
+
+# Кэш
+cache_F = {1: 1}
+cache_G = {1: 1}
+cache_fact = {0: 1, 1: 1}
 
 
-def recursive_f(n):
+# Факториал
+def iterative_factorial(n):
+    if n in cache_fact:
+        return cache_fact[n]
+    for i in range(1, n + 1):
+        if i not in cache_fact:
+            cache_fact[i] = cache_fact[i - 1] * i
+    return cache_fact[n]
+
+
+# Рекурсия
+def recursive_F(n):
+    global sign
+    if n in cache_F:
+        return cache_F[n]
+    res = sign ** n * (recursive_F(n - 1) - 2 * recursive_G(n - 1))
+    cache_F[n] = res
+    return res
+
+
+def recursive_G(n):
+    if n in cache_G:
+        return cache_G[n]
+    res = -recursive_F(n - 1) + iterative_factorial(n - 1)
+    cache_G[n] = res
+    return res
+
+
+# Итерация
+def iteration(n):
+    global sign
     if n == 1:
-        return 1
-    sign = (-1) ** n
-    return sign * (recursive_f(n - 1) - 2 * recursive_g(n - 1))
+        return (1, 1)
 
-
-def recursive_g(n):
-    if n == 1:
-        return 1
-    return factorial_recursive(n - 1) - recursive_f(n - 1)
-
-
-def factorial_recursive(n):
-    if n == 0 or n == 1:
-        return 1
-    return n * factorial_recursive(n - 1)
-
-
-def iterative_f(n):
-    if n == 1:
-        return 1
-    f_prev, g_prev = 1, 1
+    F_prev, G_prev = 1, 1
     fact = 1
+
     for i in range(2, n + 1):
-        sign = (-1) ** i
-        fact *= (i - 1)
-        f_current = sign * (f_prev - 2 * g_prev)
-        g_current = fact - f_prev
-        f_prev, g_prev = f_current, g_current
-    return f_prev
+        # Обновляем факториал (i-1)!
+        if i > 2:
+            fact *= (i - 1)
+
+        # Вычисляем текущие значения
+        F_curr = (sign ** i) * (F_prev - 2 * G_prev)
+        G_curr = -F_prev + fact
+
+        # Обновляем кэш
+        cache_F[i] = F_curr
+        cache_G[i] = G_curr
+        if i - 1 not in cache_fact:
+            cache_fact[i - 1] = fact
+
+        # Подготовка к следующей итерации
+        F_prev, G_prev = F_curr, G_curr
+
+    return (F_prev, G_prev)
 
 
 def main():
-    n = -1
-    while n < 1:
-        n = int(input("Введите натуральное число от 1: "))
+    n = int(input("Введите натуральное число n: "))
+    method = int(input("Выберите метод (рекурсия=1/итерация=2): "))
 
-    step = -1
-    while step < 1:
-        step = int(input("Введите шаг графика от 1: "))
+    # Очищаем кэши перед вычислением
+    global cache_F, cache_G, cache_fact
+    if method == 1:
+        cache_F = {1: 1}
+        cache_G = {1: 1}
+        cache_fact = {0: 1, 1: 1}
+        start_time = timeit.default_timer()
+        F_res = recursive_F(n)
+        G_res = recursive_G(n)
+        end_time = timeit.default_timer()
+    elif method == 2:
+        cache_F = {1: 1}
+        cache_G = {1: 1}
+        cache_fact = {0: 1, 1: 1}
+        start_time = timeit.default_timer()
+        F_res, G_res = iteration(n)
+        end_time = timeit.default_timer()
+    else:
+        print("Неизвестный метод")
+        return
 
-    k = -1
-    while k not in {0, 1, 2}:
-        k = int(input("Выберите режим работы (0-рекурсия, 1-итерация, 2-оба): "))
+    elapsed_time = end_time - start_time
 
-    if (n >= 33 and k in {0, 2}) or (n >= 5000 and k in {1, 2}):
-        ans = -1
-        while ans not in {0, 1}:
-            ans = int(input("Работа программы может занять большое время. Продолжить? (1=да, 0=нет): "))
-        if ans == 0:
-            return
-
-    x_values = list(range(1, n + 1, step))
-    recursive_times = []
-    iterative_times = []
-
-    if k in {0, 2}:
-        for x in x_values:
-            start = time.time()
-            result = recursive_f(x)
-            end = time.time()
-            recursive_times.append(end - start)
-            print(f"n={x}, Рекурсия: результат={result}, время={end - start:.6f} сек")
-
-    if k in {1, 2}:
-        for x in x_values:
-            start = time.time()
-            result = iterative_f(x)
-            end = time.time()
-            iterative_times.append(end - start)
-            print(f"n={x}, Итерация: результат={result}, время={end - start:.6f} сек")
-
-    plt.figure(figsize=(10, 6))
-    if k in {0, 2}:
-        plt.plot(x_values, recursive_times, label='Рекурсивный метод')
-    if k in {1, 2}:
-        plt.plot(x_values, iterative_times, label='Итерационный метод')
-
-    plt.xlabel('Значение n')
-    plt.ylabel('Время выполнения (сек)')
-    plt.title('Сравнение рекурсивного и итерационного методов')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    print(f"\nРезультат для n = {n}:")
+    print(f"F({n}) = {F_res}")
+    print(f"G({n}) = {G_res}")
+    print(f"Затраченное время: {elapsed_time:.6f} секунд")
 
 
 if __name__ == "__main__":
