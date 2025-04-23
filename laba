@@ -18,8 +18,7 @@ import sys
 sys.setrecursionlimit(100000)  # Увеличиваем лимит рекурсий
 sys.set_int_max_str_digits(100000000)  # Увеличиваем максимальное количество знаков
 
-# Невероятно полезный знак
-sign = -1
+sign = 1
 
 # Кэш
 cache_F = {1: 1}
@@ -39,10 +38,9 @@ def iterative_factorial(n):
 
 # Рекурсия
 def recursive_F(n):
-    global sign
     if n in cache_F:
         return cache_F[n]
-    res = sign ** n * (recursive_F(n - 1) - 2 * recursive_G(n - 1))
+    res = (-1 if n % 2 == 1 else 1) * (recursive_F(n - 1) - 2 * recursive_G(n - 1))
     cache_F[n] = res
     return res
 
@@ -70,8 +68,9 @@ def iteration(n):
             fact *= (i - 1)
 
         # Вычисляем текущие значения
-        F_curr = (sign ** i) * (F_prev - 2 * G_prev)
+        F_curr = sign * (F_prev - 2 * G_prev)
         G_curr = -F_prev + fact
+        sign *= -1
 
         # Обновляем кэш
         cache_F[i] = F_curr
