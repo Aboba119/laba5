@@ -15,42 +15,28 @@ G(n) = -F(n–1) + (n–1)!
 import timeit
 import sys
 
-sys.setrecursionlimit(100000)  # Увеличиваем лимит рекурсий
-sys.set_int_max_str_digits(100000000)  # Увеличиваем максимальное количество знаков
-
 sign = 1
-
-# Кэш
-cache_F = {1: 1}
-cache_G = {1: 1}
-cache_fact = {0: 1, 1: 1}
 
 
 # Факториал
 def iterative_factorial(n):
-    if n in cache_fact:
-        return cache_fact[n]
+    result = 1
     for i in range(1, n + 1):
-        if i not in cache_fact:
-            cache_fact[i] = cache_fact[i - 1] * i
-    return cache_fact[n]
+        result *= i
+    return result
 
 
 # Рекурсия
 def recursive_F(n):
-    if n in cache_F:
-        return cache_F[n]
-    res = (-1 if n % 2 == 1 else 1) * (recursive_F(n - 1) - 2 * recursive_G(n - 1))
-    cache_F[n] = res
-    return res
+    if n == 1:
+        return 1
+    return (-1 if n % 2 == 1 else 1) * (recursive_F(n - 1) - 2 * recursive_G(n - 1))
 
 
 def recursive_G(n):
-    if n in cache_G:
-        return cache_G[n]
-    res = -recursive_F(n - 1) + iterative_factorial(n - 1)
-    cache_G[n] = res
-    return res
+    if n == 1:
+        return 1
+    return -recursive_F(n - 1) + iterative_factorial(n - 1)
 
 
 # Итерация
@@ -72,12 +58,6 @@ def iteration(n):
         G_curr = -F_prev + fact
         sign *= -1
 
-        # Обновляем кэш
-        cache_F[i] = F_curr
-        cache_G[i] = G_curr
-        if i - 1 not in cache_fact:
-            cache_fact[i - 1] = fact
-
         # Подготовка к следующей итерации
         F_prev, G_prev = F_curr, G_curr
 
@@ -88,26 +68,16 @@ def main():
     n = int(input("Введите натуральное число n: "))
     method = int(input("Выберите метод (рекурсия=1/итерация=2): "))
 
-    # Очищаем кэши перед вычислением
-    global cache_F, cache_G, cache_fact
+    start_time = timeit.default_timer()
     if method == 1:
-        cache_F = {1: 1}
-        cache_G = {1: 1}
-        cache_fact = {0: 1, 1: 1}
-        start_time = timeit.default_timer()
         F_res = recursive_F(n)
         G_res = recursive_G(n)
-        end_time = timeit.default_timer()
     elif method == 2:
-        cache_F = {1: 1}
-        cache_G = {1: 1}
-        cache_fact = {0: 1, 1: 1}
-        start_time = timeit.default_timer()
         F_res, G_res = iteration(n)
-        end_time = timeit.default_timer()
     else:
         print("Неизвестный метод")
         return
+    end_time = timeit.default_timer()
 
     elapsed_time = end_time - start_time
 
