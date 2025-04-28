@@ -15,6 +15,7 @@ G(n) = -F(n–1) + (n–1)!
 import timeit
 import sys
 
+sys.set_int_max_str_digits(10000000)  # Увеличиваем максимальное количество знаков
 sign = 1
 
 
@@ -66,7 +67,7 @@ def iteration(n):
 
 def main():
     n = int(input("Введите натуральное число n: "))
-    method = int(input("Выберите метод (рекурсия=1/итерация=2): "))
+    method = 2
 
     start_time = timeit.default_timer()
     if method == 1:
